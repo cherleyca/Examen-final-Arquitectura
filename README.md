@@ -1,43 +1,84 @@
-# Microservicio de Optimizaci´on de Portafolio de Inversiones con Restricci´on Presupuestaria
+# Microservicio de Optimizaci´on de Portafolio de Inversiones
 
-Este proyecto es una aplicación web de página única que implementa un microservicio simulado para resolver el problema de la mochila (Knapsack Problem) con el objetivo de optimizar un portafolio de inversiones. Dada una capacidad presupuestaria y una lista de proyectos con sus costos y ganancias, la aplicación encuentra la combinación de proyectos que maximiza la ganancia total sin exceder el presupuesto.
+Este proyecto es una solución completa para la optimización de un portafolio de inversiones, resuelto como un microservicio y una interfaz de usuario. El backend utiliza un algoritmo de programación dinámica para encontrar la combinación óptima de proyectos que maximiza la ganancia total sin exceder un presupuesto dado, mientras que el frontend proporciona una interfaz intuitiva para interactuar con la API.
 
-## Tecnologías Utilizadas
+##  **Características**
 
-* **HTML5:** Para la estructura de la aplicación.
+* **Backend (Python + Flask):** Un microservicio ligero con un ´unico endpoint `/optimizar` que implementa el algoritmo del problema de la mochila 0/1. Incluye validaci´on robusta de datos de entrada.
 
-* **Tailwind CSS:** Para el estilo y el diseño responsivo de la interfaz.
+* **Frontend (React + Tailwind CSS):** Una interfaz web din´amica que permite a los usuarios agregar proyectos, ingresar costos y ganancias, y visualizar los resultados de la optimizaci´on en tiempo real.
 
-* **JavaScript (Vanilla JS):** Para la lógica del frontend y la implementación del algoritmo de optimización.
+* **Documentaci´on:** La API est´a documentada con una especificaci´on OpenAPI, y este archivo README proporciona instrucciones completas de uso y despliegue.
 
-## Características Principales
+##  **Instalación y Uso**
 
-* **Frontend Dinámico:** Permite a los usuarios agregar, editar y eliminar proyectos de inversión de forma interactiva.
+Sigue estos pasos para configurar y ejecutar la aplicaci´on.
 
-* **Algoritmo de Optimización Eficiente:** Utiliza un algoritmo de **programación dinámica** para resolver el problema de forma óptima.
+### **1. Configuración del Backend**
 
-* **Visualización de Resultados:** Muestra claramente los proyectos seleccionados, la ganancia total y el costo total en una tarjeta de resultados.
+Navega al directorio `backend`, crea un entorno virtual e instala las dependencias.
 
-* **Validación de Errores:** Incluye validaciones básicas para asegurar que los datos de entrada sean válidos.
+```sh
+cd backend
+python3 -m venv venv
+source venv/bin/activate  # En Windows usa `venv\Scripts\activate`
+pip install -r requirements.txt
 
-## Uso
+##  **1. Configuración del Backend**
+Navega al directorio backend, crea un entorno virtual e instala las dependencias.
 
-Para utilizar la aplicación, simplemente abre el archivo `index.html` en cualquier navegador web moderno. No se requiere servidor ni instalación de dependencias adicionales.
+cd backend
+python3 -m venv venv
+source venv/bin/activate  # En Windows usa `venv\Scripts\activate`
+pip install -r requirements.txt
 
-### Pasos
+##  **2. Configuración del Frontend**
+Navega al directorio frontend e instala las dependencias de Node.js.
 
-1. **Ingresar la Capacidad:** Introduce tu presupuesto total en el campo "Capacidad Presupuestaria".
+cd frontend
+npm install
 
-2. **Gestionar Proyectos:** Utiliza los campos de entrada para definir los proyectos de inversión, sus costos y sus ganancias. Haz clic en **"Agregar Proyecto"** para añadir más filas.
+##  **3. Despliegue de la Aplicación**
+Ejecuta el backend y el frontend en terminales separadas.
 
-3. **Calcular:** Presiona el botón **"Calcular"** para que el algoritmo procese los datos y muestre la solución óptima.
+Backend
+Asegúrate de que estás en el directorio backend con el entorno virtual activado y ejecuta el servidor.
 
-4. **Limpiar:** El botón **"Limpiar"** borra todos los campos para comenzar un nuevo cálculo.
+flask run
 
-## Explicación del Algoritmo
+El servidor se ejecutará en http://127.0.0.1:5000.
 
-La lógica central de la aplicación se basa en la programación dinámica para resolver el problema de la mochila 0/1 (donde cada proyecto puede ser seleccionado una vez o no).
+Frontend
+Asegúrate de que estás en el directorio frontend y ejecuta la aplicación de React.
 
-El algoritmo construye una tabla (`dp`) donde `dp[i][j]` representa la máxima ganancia que se puede obtener con los primeros `i` proyectos y una capacidad de `j`. La tabla se llena iterativamente, decidiendo en cada paso si se incluye o no el proyecto actual para maximizar el valor. Finalmente, la solución óptima se reconstruye a partir de la tabla para identificar los proyectos seleccionados.
+npm start
 
-Esta implementación garantiza una solución correcta y eficiente, con una complejidad temporal de $O(n \times W)$, donde $n$ es el número de proyectos y $W$ es la capacidad máxima.
+##  **La aplicación se abrirá en tu navegador en http://localhost:3000.**
+
+##  ** Documentación de la API**
+El endpoint /optimizar del microservicio está documentado con la especificación OpenAPI, que se puede encontrar en el archivo docs/openapi.yaml.
+
+##  **Endpoint: /optimizar (POST)**
+Este endpoint recibe un objeto JSON con la capacidad presupuestaria y una lista de proyectos, y devuelve la combinación óptima.
+
+##  **Entrada (JSON):**
+
+{
+  "capacidad": 10000,
+  "objetos": [
+    {"nombre": "A", "peso": 2000, "ganancia": 1500},
+    {"nombre": "B", "peso": 4000, "ganancia": 3500}
+  ]
+}
+
+##  **Salida (JSON):**
+
+{
+  "seleccionados": ["B"],
+  "ganancia_total": 3500,
+  "peso_total": 4000
+}
+
+##  **Casos de Error:**
+
+400 Bad Request: Se devuelve si los datos de entrada son inválidos o faltan.
