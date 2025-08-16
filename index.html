@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Optimizador de Portafolio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+            },
+            colors: {
+              'primary-500': '#4a5568',
+              'primary-600': '#2d3748',
+              'accent-500': '#4299e1',
+              'accent-600': '#3182ce',
+              'text-color': '#e2e8f0',
+              'bg-color': '#1a202c',
+              'card-bg': '#2d3748',
+            },
+          }
+        }
+      }
+    </script>
+    <style>
+      body {
+          font-family: 'Inter', sans-serif;
+          background-color: #1a202c;
+          color: #e2e8f0;
+      }
+      .custom-scrollbar::-webkit-scrollbar {
+          width: 8px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-track {
+          background: #2d3748;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #4a5568;
+          border-radius: 4px;
+      }
+      .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #4299e1;
+      }
+    </style>
+</head>
+<body class="bg-bg-color min-h-screen p-4 sm:p-8 flex items-center justify-center">
+    <div class="container mx-auto max-w-4xl p-6 bg-card-bg rounded-2xl shadow-xl space-y-8">
+        <h1 class="text-4xl sm:text-5xl font-extrabold text-center text-accent-500 mb-6 drop-shadow-md">
+            Optimizador de Portafolio
+        </h1>
+
+        <!-- Formulario de Entrada -->
+        <div class="p-6 bg-primary-600 rounded-xl shadow-inner">
+            <h2 class="text-2xl font-bold mb-4 text-center">Datos de Entrada</h2>
+            <div class="flex flex-col sm:flex-row items-center justify-center mb-6 space-y-4 sm:space-y-0 sm:space-x-4">
+                <label for="capacity" class="text-lg font-medium text-text-color">
+                    Capacidad Presupuestaria ($)
+                </label>
+                <input type="number" id="capacity" value="10000" class="w-full sm:w-auto p-3 bg-primary-500 text-text-color rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-500 transition-colors">
+            </div>
+
+            <div class="mb-4">
+                <h3 class="text-xl font-bold text-center mb-4">Proyectos de Inversión</h3>
+                <div id="projects-list" class="space-y-4 custom-scrollbar max-h-96 overflow-y-auto pr-2">
+                    <!-- Las filas de proyectos se inyectarán aquí dinámicamente -->
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4 mt-6">
+                <button id="add-project-btn" class="w-full sm:w-auto px-6 py-3 bg-accent-500 text-white rounded-lg font-semibold shadow-md hover:bg-accent-600 transition-colors">
+                    Agregar Proyecto
+                </button>
+                <button id="calculate-btn" class="w-full sm:w-auto px-6 py-3 bg-green-600 text-white rounded-lg font-semibold shadow-md hover:bg-green-700 transition-colors">
+                    Calcular
+                </button>
+                <button id="clear-btn" class="w-full sm:w-auto px-6 py-3 bg-red-600 text-white rounded-lg font-semibold shadow-md hover:bg-red-700 transition-colors">
+                    Limpiar
+                </button>
+            </div>
+        </div>
+
+        <!-- Visualización de Resultados -->
+        <div id="results-container" class="hidden p-6 bg-primary-600 rounded-xl shadow-inner animate-fade-in-up">
+            <h2 class="text-2xl font-bold mb-4 text-center">Resultados de la Optimización</h2>
+            <div id="results-card" class="bg-card-bg p-6 rounded-lg shadow-lg">
+                <div id="loading-indicator" class="hidden text-center text-accent-500">
+                    <div class="animate-spin inline-block h-8 w-8 border-4 border-accent-500 border-t-transparent rounded-full"></div>
+                    <p class="mt-2">Calculando...</p>
+                </div>
+                <div id="error-message" class="hidden bg-red-700 text-white p-4 rounded-lg text-center font-semibold"></div>
+                <div id="results-content" class="space-y-4">
+                    <p class="text-lg font-semibold">
+                        <span class="text-accent-500">Ganancia Total:</span> <span id="total-profit" class="font-extrabold text-2xl"></span>
+                    </p>
+                    <p class="text-lg font-semibold">
+                        <span class="text-accent-500">Costo Total:</span> <span id="total-weight" class="font-extrabold text-2xl"></span>
+                    </p>
+                    <div class="mt-4">
+                        <h3 class="text-xl font-bold mb-2">Proyectos Seleccionados:</h3>
+                        <ul id="selected-projects-list" class="list-disc list-inside space-y-1">
+                            <!-- Los proyectos seleccionados se mostrarán aquí -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+    <!-- Plantilla para las filas de proyectos -->
+    <template id="project-row-template">
+        <div class="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-4 p-4 bg-primary-500 rounded-lg shadow-sm">
+            <input type="text" placeholder="Nombre" class="project-name w-full sm:w-1/3 p-2 bg-primary-600 text-text-color rounded focus:outline-none focus:ring-1 focus:ring-accent-500">
+            <input type="number" placeholder="Costo" class="project-weight w-full sm:w-1/3 p-2 bg-primary-600 text-text-color rounded focus:outline-none focus:ring-1 focus:ring-accent-500">
+            <input type="number" placeholder="Ganancia" class="project-profit w-full sm:w-1/3 p-2 bg-primary-600 text-text-color rounded focus:outline-none focus:ring-1 focus:ring-accent-500">
+            <button class="remove-project-btn bg-red-500 hover:bg-red-600 text-white font-bold p-2 rounded-full w-8 h-8 flex items-center justify-center transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                </svg>
+            </button>
+        </div>
+    </template>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Seleccionar elementos del DOM
+            const capacityInput = document.getElementById('capacity');
+            const projectsList = document.getElementById('projects-list');
+            const addProjectBtn = document.getElementById('add-project-btn');
+            const calculateBtn = document.getElementById('calculate-btn');
+            const clearBtn = document.getElementById('clear-btn');
+            const resultsContainer = document.getElementById('results-container');
+            const totalProfitSpan = document.getElementById('total-profit');
+            const totalWeightSpan = document.getElementById('total-weight');
+            const selectedProjectsList = document.getElementById('selected-projects-list');
+            const loadingIndicator = document.getElementById('loading-indicator');
+            const errorMessageDiv = document.getElementById('error-message');
+            const projectTemplate = document.getElementById('project-row-template');
+
+            // --- Funciones para la lógica del Frontend ---
+
+            // Añade una fila de proyecto con datos por defecto
+            const addProject = (nombre = '', peso = '', ganancia = '') => {
+                const newRow = projectTemplate.content.cloneNode(true).querySelector('div');
+                newRow.querySelector('.project-name').value = nombre;
+                newRow.querySelector('.project-weight').value = peso;
+                newRow.querySelector('.project-profit').value = ganancia;
+                projectsList.appendChild(newRow);
+            };
+
+            // Rellenar con los datos del ejemplo inicial
+            addProject('A', 2000, 1500);
+            addProject('B', 4000, 3500);
+            addProject('C', 5000, 4000);
+            addProject('D', 3000, 2500);
+
+            // Muestra un mensaje de error en la UI
+            const showError = (message) => {
+                errorMessageDiv.textContent = message;
+                errorMessageDiv.classList.remove('hidden');
+            };
+
+            // Oculta el mensaje de error
+            const hideError = () => {
+                errorMessageDiv.classList.add('hidden');
+            };
+
+            // --- Algoritmo de Programación Dinámica (Problema de la Mochila 0/1) ---
+
+            const knapsack = (capacity, objects) => {
+                const n = objects.length;
+                
+                // Matriz para almacenar las ganancias máximas.
+                // dp[i][j] = ganancia máxima usando los primeros i proyectos con capacidad j.
+                const dp = Array(n + 1).fill(0).map(() => Array(capacity + 1).fill(0));
+                
+                // Llenar la tabla dp de abajo hacia arriba
+                for (let i = 1; i <= n; i++) {
+                    const { peso, ganancia } = objects[i - 1];
+                    for (let w = 1; w <= capacity; w++) {
+                        // Caso 1: El proyecto actual no se puede incluir (su peso es mayor que la capacidad actual)
+                        // o simplemente decidimos no incluirlo. La ganancia es la misma que la de la fila anterior.
+                        dp[i][w] = dp[i - 1][w];
+
+                        // Caso 2: El proyecto actual cabe en la mochila.
+                        // Comparamos la ganancia actual (sin incluir este proyecto) con
+                        // la ganancia si lo incluimos (ganancia_actual + ganancia de la mochila con la capacidad restante).
+                        if (peso <= w) {
+                            dp[i][w] = Math.max(dp[i][w], ganancia + dp[i - 1][w - peso]);
+                        }
+                    }
+                }
+                
+                // Reconstruir la solución para encontrar qué proyectos fueron seleccionados
+                const selected = [];
+                let totalWeight = 0;
+                let w = capacity;
+                for (let i = n; i > 0 && w > 0; i--) {
+                    // Si el valor en la celda actual es diferente al de la celda de arriba,
+                    // significa que el proyecto 'i-1' fue incluido en la solución.
+                    if (dp[i][w] !== dp[i - 1][w]) {
+                        const project = objects[i - 1];
+                        selected.push(project.nombre);
+                        totalWeight += project.peso;
+                        w -= project.peso; // Reducir la capacidad restante
+                    }
+                }
+
+                // Invertir el orden para que coincida con el orden de entrada
+                selected.reverse();
+
+                return {
+                    seleccionados: selected,
+                    ganancia_total: dp[n][capacity],
+                    peso_total: totalWeight
+                };
+            };
+
+            // --- Eventos y Lógica de UI ---
+
+            // Evento para añadir un nuevo proyecto
+            addProjectBtn.addEventListener('click', () => {
+                addProject();
+            });
+
+            // Evento para calcular la optimización
+            calculateBtn.addEventListener('click', () => {
+                hideError();
+                resultsContainer.classList.add('hidden');
+                loadingIndicator.classList.remove('hidden');
+
+                const capacity = parseInt(capacityInput.value);
+                const projectRows = Array.from(projectsList.querySelectorAll('div'));
+                
+                // Validar la entrada de capacidad
+                if (isNaN(capacity) || capacity < 0) {
+                    showError('Por favor, ingrese una capacidad presupuestaria válida (un número no negativo).');
+                    loadingIndicator.classList.add('hidden');
+                    return;
+                }
+
+                const objects = [];
+                let hasInvalidData = false;
+                
+                projectRows.forEach(row => {
+                    const nombre = row.querySelector('.project-name').value.trim();
+                    const peso = parseInt(row.querySelector('.project-weight').value);
+                    const ganancia = parseInt(row.querySelector('.project-profit').value);
+
+                    if (!nombre || isNaN(peso) || peso < 0 || isNaN(ganancia) || ganancia < 0) {
+                        hasInvalidData = true;
+                    }
+
+                    objects.push({ nombre, peso, ganancia });
+                });
+
+                if (hasInvalidData) {
+                    showError('Por favor, complete todos los campos de los proyectos con valores válidos (nombre, costo, ganancia).');
+                    loadingIndicator.classList.add('hidden');
+                    return;
+                }
+
+                // Simular una llamada a la API con un pequeño retraso
+                setTimeout(() => {
+                    loadingIndicator.classList.add('hidden');
+                    const result = knapsack(capacity, objects);
+                    
+                    // Actualizar la UI con los resultados
+                    totalProfitSpan.textContent = `$${result.ganancia_total.toLocaleString('es-ES')}`;
+                    totalWeightSpan.textContent = `$${result.peso_total.toLocaleString('es-ES')}`;
+                    selectedProjectsList.innerHTML = ''; // Limpiar la lista anterior
+                    if (result.seleccionados.length > 0) {
+                        result.seleccionados.forEach(project => {
+                            const li = document.createElement('li');
+                            li.textContent = project;
+                            selectedProjectsList.appendChild(li);
+                        });
+                    } else {
+                        const li = document.createElement('li');
+                        li.textContent = 'Ningún proyecto seleccionado';
+                        selectedProjectsList.appendChild(li);
+                    }
+                    
+                    resultsContainer.classList.remove('hidden');
+                }, 500);
+            });
+
+            // Evento para limpiar todos los campos y resultados
+            clearBtn.addEventListener('click', () => {
+                capacityInput.value = '';
+                projectsList.innerHTML = '';
+                resultsContainer.classList.add('hidden');
+                hideError();
+            });
+
+            // Evento para eliminar una fila de proyecto (delegación de eventos)
+            projectsList.addEventListener('click', (event) => {
+                if (event.target.closest('.remove-project-btn')) {
+                    const rowToRemove = event.target.closest('div');
+                    if (rowToRemove) {
+                        rowToRemove.remove();
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
